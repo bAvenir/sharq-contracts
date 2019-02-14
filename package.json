@@ -1,0 +1,22 @@
+{
+  "name": "sharq-contracts",
+  "version": "1.0.0",
+  "description": "Shar-q extension for creating contracts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/bavenir/sharq_contracts.git"
+  },
+  "keywords": [
+    "shar-q",
+    "iot",
+    "nodejs"
+  ],
+  "author": "Jorge Almela",
+  "license": "MIT",
+  "homepage": "https://bitbucket.org/bavenir/sharq_contracts#readme",
+  "dependencies": {}
+}
