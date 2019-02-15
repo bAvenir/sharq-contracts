@@ -1,4 +1,4 @@
-var semantic = require('../services/semantic'); // Semantic Repository
+var mgmtSemanticRepo = require('../services/semantic'); // Semantic Repository
 
 /*
 Extract one field per object in array
@@ -24,6 +24,23 @@ function createContract(id, descr, funcs) {
     description: descr
   };
   return funcs.commServer.callCommServer(payload, 'groups', 'POST');
+}
+
+/*
+Remove contract group in commServer
+*/
+function cancelContract(id, db, funcs) {
+  return funcs.commServer.callCommServer({}, 'groups/' + id, 'DELETE')
+    .then(function(response) {
+      return mgmtSemanticRepo(id, "delete", db, funcs);
+    })
+    .catch(function(err) {
+      if (err.statusCode !== 404) {
+        return Promise.reject(err);
+      } else {
+        return Promise.resolve(true);
+      }
+    });
 }
 
 /*
@@ -53,7 +70,7 @@ function moveItemsInContract(req, res, obj, db, funcs) {
       },
       function(allresult) {
         if (allresult.length === obj.items.length) {
-          return semantic.mgmtSemanticRepo(obj.ctid, "create", db, funcs)
+          return mgmtSemanticRepo(obj.ctid, "create", db, funcs)
             .then(function(response) {
               return Promise.resolve({
                 "error": false,
@@ -211,79 +228,79 @@ function deletingOne(oid, otherParams, req, res, funcs, callback) {
 Create notifications
 */
 function createNotifAndAudit(obj, funcs) {
-    var auditNumber;
-    var notifNumber;
-    var notifTarget = [];
-    var message = null;
-    try {
-      var allUsers = obj.ownUsers.concat(obj.foreignUsers);
-      for (var n = 0; n < allUsers.length; n++) {
-        notifTarget.push({
+  var auditNumber;
+  var notifNumber;
+  var notifTarget = [];
+  var message = null;
+  try {
+    var allUsers = obj.ownUsers.concat(obj.foreignUsers);
+    for (var n = 0; n < allUsers.length; n++) {
+      notifTarget.push({
+        kind: 'user',
+        item: allUsers[n].id,
+        extid: allUsers[n].extid
+      });
+    }
+
+    if (obj.imAdmin && obj.type === "ACCEPT") {
+      notifNumber = 22;
+      auditNumber = 52;
+    } else if (!obj.imAdmin && obj.type === "ACCEPT") {
+      notifNumber = 24;
+      auditNumber = 54;
+    } else if (obj.imAdmin && obj.type === "DELETE") {
+      notifNumber = 23;
+      auditNumber = 53;
+    } else if (!obj.imAdmin && obj.type === "DELETE") {
+      notifNumber = 25;
+      auditNumber = 55;
+    } else if (obj.type === "UPDATE") {
+      notifNumber = 26;
+      auditNumber = 56;
+      message = "Reset contract";
+    } else {
+      return Promise.resolve(false);
+    }
+
+    // Asynchronously notify all allUsers
+    // Ignore response
+    var toNotify = [];
+    for (var i = 0; i < notifTarget.length; i++) {
+      toNotify.push(funcs.notifHelper.createNotification({
           kind: 'user',
-          item: allUsers[n].id,
-          extid: allUsers[n].extid
-        });
-      }
-
-      if (obj.imAdmin && obj.type === "ACCEPT") {
-        notifNumber = 22;
-        auditNumber = 52;
-      } else if (!obj.imAdmin && obj.type === "ACCEPT") {
-        notifNumber = 24;
-        auditNumber = 54;
-      } else if (obj.imAdmin && obj.type === "DELETE") {
-        notifNumber = 23;
-        auditNumber = 53;
-      } else if (!obj.imAdmin && obj.type === "DELETE") {
-        notifNumber = 25;
-        auditNumber = 55;
-      } else if (obj.type === "UPDATE") {
-        notifNumber = 26;
-        auditNumber = 56;
-        message = "Reset contract";
-      } else {
-        return Promise.resolve(false);
-      }
-
-      // Asynchronously notify all allUsers
-      // Ignore response
-      var toNotify = [];
-      for (var i = 0; i < notifTarget.length; i++) {
-        toNotify.push(funcs.notifHelper.createNotification({
+          item: obj.token_uid,
+          extid: obj.token_mail
+        },
+        notifTarget[i], {
+          kind: 'contract',
+          item: obj.ct_id,
+          extid: obj.ctid
+        },
+        'info', notifNumber, message
+      ));
+    }
+    return Promise.all(toNotify)
+      .then(function(response) {
+        return funcs.audits.create({
             kind: 'user',
             item: obj.token_uid,
             extid: obj.token_mail
-          },
-          notifTarget[i], {
+          }, {}, {
             kind: 'contract',
             item: obj.ct_id,
             extid: obj.ctid
           },
-          'info', notifNumber, message
-        ));
-      }
-      return Promise.all(toNotify)
-        .then(function(response) {
-          return funcs.audits.create({
-              kind: 'user',
-              item: obj.token_uid,
-              extid: obj.token_mail
-            }, {}, {
-              kind: 'contract',
-              item: obj.ct_id,
-              extid: obj.ctid
-            },
-            auditNumber, message);
-        })
-        .then(function(response) {
-          return Promise.resolve(true);
-        })
-        .catch(function(err) {
-          return Promise.reject(err);
-        });
-    } catch (err) {
-      return Promise.resolve(true);
-    }
+          auditNumber, message);
+      })
+      .then(function(response) {
+        return Promise.resolve(true);
+      })
+      .catch(function(err) {
+        return Promise.reject(err);
+      });
+  } catch (err) {
+    return Promise.resolve(true);
+  }
 }
 
 // Export public functions
@@ -291,6 +308,7 @@ function createNotifAndAudit(obj, funcs) {
 module.exports = {
   getOnlyProp: getOnlyProp,
   createContract: createContract,
+  cancelContract: cancelContract,
   moveItemsInContract: moveItemsInContract,
   createNotifAndAudit: createNotifAndAudit
 };

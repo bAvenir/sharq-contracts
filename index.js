@@ -13,6 +13,12 @@ Accept Contract
 pubFunctions.accept = require('./services/accept');
 
 /*
+Remove Contract
+*/
+pubFunctions.cancel = require('./services/cancel').cancel;
+pubFunctions.removeAllContract = require('./services/cancel').removeAllContract;
+
+/*
 Manage semantic repository
 */
 // pubFunctions.mgmtSemanticRepo = require('./services/semantic');
