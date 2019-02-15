@@ -15,7 +15,6 @@ function getOnlyProp(items, toAdd, properties) {
   }
 }
 
-
 /*
 Start contract group in commServer
 */
@@ -208,12 +207,90 @@ function deletingOne(oid, otherParams, req, res, funcs, callback) {
     });
 }
 
+/*
+Create notifications
+*/
+function createNotifAndAudit(obj, funcs) {
+    var auditNumber;
+    var notifNumber;
+    var notifTarget = [];
+    var message = null;
+    try {
+      var allUsers = obj.ownUsers.concat(obj.foreignUsers);
+      for (var n = 0; n < allUsers.length; n++) {
+        notifTarget.push({
+          kind: 'user',
+          item: allUsers[n].id,
+          extid: allUsers[n].extid
+        });
+      }
 
+      if (obj.imAdmin && obj.type === "ACCEPT") {
+        notifNumber = 22;
+        auditNumber = 52;
+      } else if (!obj.imAdmin && obj.type === "ACCEPT") {
+        notifNumber = 24;
+        auditNumber = 54;
+      } else if (obj.imAdmin && obj.type === "DELETE") {
+        notifNumber = 23;
+        auditNumber = 53;
+      } else if (!obj.imAdmin && obj.type === "DELETE") {
+        notifNumber = 25;
+        auditNumber = 55;
+      } else if (obj.type === "UPDATE") {
+        notifNumber = 26;
+        auditNumber = 56;
+        message = "Reset contract";
+      } else {
+        return Promise.resolve(false);
+      }
+
+      // Asynchronously notify all allUsers
+      // Ignore response
+      var toNotify = [];
+      for (var i = 0; i < notifTarget.length; i++) {
+        toNotify.push(funcs.notifHelper.createNotification({
+            kind: 'user',
+            item: obj.token_uid,
+            extid: obj.token_mail
+          },
+          notifTarget[i], {
+            kind: 'contract',
+            item: obj.ct_id,
+            extid: obj.ctid
+          },
+          'info', notifNumber, message
+        ));
+      }
+      return Promise.all(toNotify)
+        .then(function(response) {
+          return funcs.audits.create({
+              kind: 'user',
+              item: obj.token_uid,
+              extid: obj.token_mail
+            }, {}, {
+              kind: 'contract',
+              item: obj.ct_id,
+              extid: obj.ctid
+            },
+            auditNumber, message);
+        })
+        .then(function(response) {
+          return Promise.resolve(true);
+        })
+        .catch(function(err) {
+          return Promise.reject(err);
+        });
+    } catch (err) {
+      return Promise.resolve(true);
+    }
+}
 
 // Export public functions
 
 module.exports = {
   getOnlyProp: getOnlyProp,
   createContract: createContract,
-  moveItemsInContract: moveItemsInContract
+  moveItemsInContract: moveItemsInContract,
+  createNotifAndAudit: createNotifAndAudit
 };
