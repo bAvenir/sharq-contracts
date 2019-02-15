@@ -18,5 +18,7 @@
   "author": "Jorge Almela",
   "license": "MIT",
   "homepage": "https://bitbucket.org/bavenir/sharq_contracts#readme",
-  "dependencies": {}
+  "dependencies": {
+    "uuid": "^3.3.2"
+  }
 }
