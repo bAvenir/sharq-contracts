@@ -303,6 +303,22 @@ function createNotifAndAudit(obj, funcs) {
   }
 }
 
+/**
+ * Looks for the user id in the contracts
+ * @return {Boolean}
+ */
+function uidInContract(uid, data) {
+  var array = [];
+  array = data.iotOwner.uid;
+  array = array.concat(data.foreignIot.uid);
+  for (var i = 0, l = array.length; i < l; i++) {
+    if (uid === array[i].id.toString()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Export public functions
 
 module.exports = {
@@ -310,5 +326,6 @@ module.exports = {
   createContract: createContract,
   cancelContract: cancelContract,
   moveItemsInContract: moveItemsInContract,
-  createNotifAndAudit: createNotifAndAudit
+  createNotifAndAudit: createNotifAndAudit,
+  uidInContract: uidInContract
 };

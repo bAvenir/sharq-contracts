@@ -19,6 +19,13 @@ pubFunctions.cancel = require('./services/cancel').cancel;
 pubFunctions.removeAllContract = require('./services/cancel').removeAllContract;
 
 /*
+Get Contract
+*/
+pubFunctions.contractFeeds = require('./services/get').contractFeeds;
+pubFunctions.contractInfo = require('./services/get').contractInfo;
+pubFunctions.fetchContract = require('./services/get').fetchContract;
+
+/*
 Manage semantic repository
 */
 // pubFunctions.mgmtSemanticRepo = require('./services/semantic');
