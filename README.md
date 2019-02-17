@@ -1,4 +1,4 @@
-#SHAR-Q Contracts
+# SHAR-Q Contracts
 
 Contracts module extension for SHAR-Q Iot platform
 
