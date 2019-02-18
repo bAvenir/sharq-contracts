@@ -319,6 +319,15 @@ function uidInContract(uid, data) {
   return false;
 }
 
+// Get id if a condition is met
+function getOnlyIdCondition(items, toAdd) {
+  for (var i = 0; i < toAdd.length; i++) {
+    if (!toAdd[i].imAdmin) {
+      items.push(toAdd[i].id);
+    }
+  }
+}
+
 // Export public functions
 
 module.exports = {
@@ -327,5 +336,6 @@ module.exports = {
   cancelContract: cancelContract,
   moveItemsInContract: moveItemsInContract,
   createNotifAndAudit: createNotifAndAudit,
-  uidInContract: uidInContract
+  uidInContract: uidInContract,
+  getOnlyIdCondition: getOnlyIdCondition
 };
