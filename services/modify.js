@@ -31,7 +31,7 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs) {
     return funcs.sync.forEachAll(cts,
       function(value, allresult, next, otherParams) {
         // Add inactive items to user contract item
-        db.userOp.update({
+        return db.userOp.update({
             "_id": uid.id,
             "hasContracts.extid": value.extid
           }, {
@@ -130,7 +130,7 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs) {
                   },
                   56, "Item " + oid.extid + " disabled");
               }
-              return true;
+              return Promise.resolve(true);
             })
             .then(function(response) {
               funcs.logger.log(req, res, {
