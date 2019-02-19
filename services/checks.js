@@ -179,7 +179,7 @@ checksModule.acceptCheck = function(query, db, funcs, callback) {
 Checks if a user can be pulled from a contract
 Is the case of user is no contract admin and has no items in it
 */
-checksModule.checkContracts = function(userId, userMail, db, funcs) {
+checksModule.checkContracts = function(userId, userMail, db, funcs, callback) {
   var ctids_notAdmin = [];
   return db.userOp.findOne({
       _id: userId
@@ -190,7 +190,7 @@ checksModule.checkContracts = function(userId, userMail, db, funcs) {
       // Get only the contracts of which the user is not ADMIN
       util.getOnlyIdCondition(ctids_notAdmin, response.hasContracts);
       if (ctids_notAdmin.length > 0) { // Check if there is any contracts to check
-        return funcs.sync.forEachAll(ctids_notAdmin,
+        funcs.sync.forEachAll(ctids_notAdmin,
           function(value, allresult, next, otherParams) {
             var ctid = value;
             db.itemsOp.find({
@@ -202,7 +202,7 @@ checksModule.checkContracts = function(userId, userMail, db, funcs) {
               .then(function(data) {
                 if (data) {
                   // If there are devices still, do not pull the user from the contract
-                  return Promise.reject(true);
+                  callback(true, true);
                 } else {
                   return db.contractOp.update({
                     "_id": ctid
@@ -226,17 +226,17 @@ checksModule.checkContracts = function(userId, userMail, db, funcs) {
           },
           function(allresult) {
             if (allresult.length === ctids_notAdmin.length) {
-              return Promise.resolve(true);
+              callback(false, true);
             }
           },
           false, {}
         );
       } else {
-        return Promise.resolve(false);
+        callback(false, false);
       }
     })
     .catch(function(err) {
-      return Promise.reject(err);
+      callback(true, err);
     });
 };
 

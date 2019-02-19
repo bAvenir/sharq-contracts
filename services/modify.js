@@ -10,7 +10,7 @@ When an item is updated we need to put them in "hold" the contracts
 3 - Add flag in user contract instance with the "inactive" items
 4 - Create notifications and logs
 */
-modifyModule.pauseContracts = function(ctData, req, res, db, funcs) {
+modifyModule.pauseContracts = function(ctData, req, res, db, funcs, callback) {
   var oid, ct, uid;
   if (ctData && ctData.ct.length > 0) {
     oid = ctData.oid;
@@ -28,7 +28,7 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs) {
     cts.push(ct);
   }
   if (cts.length > 0) { // Check if there is any item to delete
-    return funcs.sync.forEachAll(cts,
+     funcs.sync.forEachAll(cts,
       function(value, allresult, next, otherParams) {
         // Add inactive items to user contract item
         db.userOp.update({
@@ -63,7 +63,7 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs) {
         if (allresult.length === cts.length) {
           var ct_oids = [];
           util.getOnlyProp(ct_oids, cts, ['extid']);
-          db.itemOp.findOne({
+          return db.itemOp.findOne({
               "_id": oid.id
             })
             .then(function(response) {
@@ -130,19 +130,19 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs) {
                   },
                   56, "Item " + oid.extid + " disabled");
               }
-              return true;
+              return Promise.resolve(true);
             })
             .then(function(response) {
               funcs.logger.log(req, res, {
                 type: 'debug',
                 data: 'Disabling item in contract(s): ' + oid.extid
               });
-              return Promise.resolve({
+              callback(false, {
                 toPause: allresult
               });
             })
             .catch(function(err) {
-              return Promise.reject(err);
+              callback(true, err);
             });
         }
       },
@@ -160,7 +160,7 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs) {
         message: "No items to be removed"
       }
     });
-    return Promise.resolve({
+    callback(false, {
       toPause: "Nothing to be removed..."
     });
   }
@@ -331,9 +331,9 @@ Restart contract, when a service gets updated
 2 - Create contract with same specs
 3 - Create notifications and logs
 */
-modifyModule.resetContract = function(cts, uid, db, funcs) {
+modifyModule.resetContract = function(cts, uid, db, funcs, callback) {
     if (cts.length > 0) { // Check if there is any item to delete
-      return funcs.sync.forEachAll(cts,
+      funcs.sync.forEachAll(cts,
         function(value, allresult, next, otherParams) {
           var contractData = {};
           var uidService = [];
@@ -448,7 +448,7 @@ modifyModule.resetContract = function(cts, uid, db, funcs) {
         },
         function(allresult) {
           if (allresult.length === cts.length) {
-            return Promise.resolve({
+            callback(false, {
               toReset: allresult
             });
           }
@@ -459,7 +459,7 @@ modifyModule.resetContract = function(cts, uid, db, funcs) {
       );
     } else {
       // logger.warn({user:uid.extid, action: 'updateContract', message: "No contracts to be updated"});
-      return Promise.resolve({
+      callback(false, {
         toReset: "Nothing to be removed..."
       });
     }
