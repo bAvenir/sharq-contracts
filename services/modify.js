@@ -63,7 +63,7 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs) {
         if (allresult.length === cts.length) {
           var ct_oids = [];
           util.getOnlyProp(ct_oids, cts, ['extid']);
-          db.itemOp.findOne({
+          return db.itemOp.findOne({
               "_id": oid.id
             })
             .then(function(response) {
