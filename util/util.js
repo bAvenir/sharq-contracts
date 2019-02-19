@@ -126,7 +126,7 @@ Add items to contract group in commServer
 Extends to moveItemsInContract
 */
 function addingOne(oid, otherParams, req, res, db, funcs, callback) {
-  db.itemOp.updateOne({
+  return db.itemOp.updateOne({
       "oid": oid,
       "hasContracts.extid": otherParams.ctid
     }, {
@@ -193,7 +193,7 @@ Remove items from contract group in commServer
 Extends to moveItemsInContract
 */
 function deletingOne(oid, otherParams, req, res, funcs, callback) {
-  funcs.commServer.callCommServer({}, 'users/' + oid + '/groups/' + otherParams.ctid, 'DELETE')
+  return funcs.commServer.callCommServer({}, 'users/' + oid + '/groups/' + otherParams.ctid, 'DELETE')
     .then(function(response) {
       funcs.logger.log(req, res, {
         type: "audit",
