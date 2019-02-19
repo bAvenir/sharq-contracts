@@ -337,5 +337,7 @@ module.exports = {
   moveItemsInContract: moveItemsInContract,
   createNotifAndAudit: createNotifAndAudit,
   uidInContract: uidInContract,
-  getOnlyIdCondition: getOnlyIdCondition
+  getOnlyIdCondition: getOnlyIdCondition,
+  addingOne: addingOne,
+  deletingOne: deletingOne
 };
