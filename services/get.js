@@ -63,8 +63,7 @@ getModule.contractInfo = function(obj, req, res, db, funcs) {
 /*
 Get user contracts
 */
-getModule.fetchContract = function(req, res, db, funcs) {
-  var id = req.params.id; // User id
+getModule.fetchContract = function(id, req, res, db, funcs) {
   var offset = req.query.offset;
   var limit = req.query.limit;
   var filter = req.query.filter;
