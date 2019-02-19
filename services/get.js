@@ -68,6 +68,7 @@ getModule.fetchContract = function(req, res, db, funcs) {
   var offset = req.query.offset;
   var limit = req.query.limit;
   var filter = req.query.filter;
+  var contracts; // Stores final result
   var aggregation = [];
   aggregation.push({
     $match: {
@@ -126,17 +127,20 @@ getModule.fetchContract = function(req, res, db, funcs) {
         path: "hasContracts.id"
       });
     })
-    .then(function(contracts) {
+    .then(function(response) {
+      contracts = response;
       if (contracts.length === 0) {
         contracts = [];
-        funcs.logger.log(req, res, {
+        return funcs.logger.log(req, res, {
           type: 'warn',
           data: 'No contracts for: ' + id
         });
-        return Promise.resolve(contracts);
       } else {
-        return Promise.resolve(contracts);
+        return Promise.resolve(true);
       }
+    })
+    .then(function(response) {
+      return Promise.resolve(contracts);
     })
     .catch(function(error) {
       return Promise.reject(error);
