@@ -111,6 +111,8 @@ removeModule.removeAllContract = function(obj, db, funcs) {
         obj.imAdmin = true;
         obj.type = "DELETE";
         return util.createNotifAndAudit(obj, funcs); // Accepted = true
+      } else {
+        return Promise.resolve(true);
       }
     })
     .then(function(response) {
