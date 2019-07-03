@@ -54,16 +54,20 @@ removeModule.removeAllContract = function(obj, db, funcs) {
 
   return db.contractOp.findOne(obj.queryId).lean()
     .then(function(response) {
-      var query = {
-        foreignIot: {},
-        iotOwner: {},
-        legalDescription: "",
-        status: "deleted"
-      };
-      data = response;
-      return db.contractOp.update(obj.queryId, {
-        $set: query
-      });
+      if(!response){
+        return Promise.reject({continue: true, message: "Contract " + JSON.stringify(obj.queryId) + " does not exist"});
+      } else {
+        var query = {
+          foreignIot: {},
+          iotOwner: {},
+          legalDescription: "",
+          status: "deleted"
+        };
+        data = response;
+        return db.contractOp.update(obj.queryId, {
+          $set: query
+        });
+      }
     })
     .then(function(response) {
       return util.cancelContract(data.ctid, db, funcs);
@@ -119,7 +123,11 @@ removeModule.removeAllContract = function(obj, db, funcs) {
       return Promise.resolve(response);
     })
     .catch(function(err) {
-      return Promise.reject(err);
+      if(err.continue){
+        return Promise.resolve(err.message);
+      } else {
+        return Promise.reject(err);
+      }
     });
 };
 
