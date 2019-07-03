@@ -55,7 +55,7 @@ removeModule.removeAllContract = function(obj, db, funcs) {
   return db.contractOp.findOne(obj.queryId).lean()
     .then(function(response) {
       if(!response){
-        return Promise.reject({continue: true, message: "Contract " + JSON.stringify(obj.queryId) + " does not exist"});
+        Promise.reject({continue: true, message: "Contract " + JSON.stringify(obj.queryId) + " does not exist"});
       } else {
         var query = {
           foreignIot: {},
@@ -171,22 +171,26 @@ function removeOneUser(req, res, imForeign) {
       new: true
     }).lean()
     .then(function(response) {
-      id = response._id; // Recover _id (Case original input was ctid)
-      ctid = response.ctid;
-      data = response;
-      if (imForeign) {
-        util.getOnlyProp(items, response.foreignIot.items, ['id']);
+      if(!response){
+        Promise.reject({continue: true, message: "Contract " + JSON.stringify(obj.queryId) + " does not exist"});
       } else {
-        util.getOnlyProp(items, response.iotOwner.items, ['id']);
+        id = response._id; // Recover _id (Case original input was ctid)
+        ctid = response.ctid;
+        data = response;
+        if (imForeign) {
+          util.getOnlyProp(items, response.foreignIot.items, ['id']);
+        } else {
+          util.getOnlyProp(items, response.iotOwner.items, ['id']);
+        }
+        return db.itemOp.find({
+          "_id": {
+            $in: items
+          },
+          'uid.id': uid
+        }, {
+          oid: 1
+        });
       }
-      return db.itemOp.find({
-        "_id": {
-          $in: items
-        },
-        'uid.id': uid
-      }, {
-        oid: 1
-      });
     })
     .then(function(response) {
       util.getOnlyProp(items_id, response, ['_id']);
@@ -264,8 +268,11 @@ function removeOneUser(req, res, imForeign) {
       return Promise.resolve(response);
     })
     .catch(function(err) {
-      console.log(err);
-      return Promise.reject(err);
+      if(err.continue){
+        return Promise.resolve(err.message);
+      } else {
+        return Promise.reject(err);
+      }
     });
 }
 
