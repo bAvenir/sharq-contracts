@@ -113,15 +113,19 @@ removeModule.removeAllContract = function(obj, db, funcs) {
     })
     .then(function(response) {
       if (obj.token_uid && obj.token_mail) {
-        obj.id = data._id;
-        obj.ctid = data.ctid;
-        obj.ownUsers = data.iotOwner.uid;
-        obj.foreignUsers = data.foreignIot.uid;
-        obj.imAdmin = true;
-        obj.type = "DELETE";
-        return util.createNotifAndAudit(obj, funcs); // Accepted = true
+        try{
+          obj.id = data._id;
+          obj.ctid = data.ctid;
+          obj.ownUsers = data.iotOwner.uid;
+          obj.foreignUsers = data.foreignIot.uid;
+          obj.imAdmin = true;
+          obj.type = "DELETE";
+          return util.createNotifAndAudit(obj, funcs); // Accepted = true
+        } catch(err) {
+          Promise.resolve("Finish without notification");
+        }
       } else {
-        return Promise.resolve(true);
+        Promise.resolve("Finish without notification");
       }
     })
     .then(function(response) {
@@ -264,15 +268,19 @@ function removeOneUser(req, res, imForeign) {
       return util.moveItemsInContract(obj, db, funcs); // add = false
     })
     .then(function(response) {
-      obj.ct_id = data._id;
-      obj.ctid = data.ctid;
-      obj.token_uid = uid;
-      obj.token_mail = mail;
-      obj.ownUsers = data.iotOwner.uid;
-      obj.foreignUsers = data.foreignIot.uid;
-      obj.imAdmin = false;
-      obj.type = "DELETE";
-      return util.createNotifAndAudit(obj, funcs); // Accepted = true
+      try{
+        obj.ct_id = data._id;
+        obj.ctid = data.ctid;
+        obj.token_uid = uid;
+        obj.token_mail = mail;
+        obj.ownUsers = data.iotOwner.uid;
+        obj.foreignUsers = data.foreignIot.uid;
+        obj.imAdmin = false;
+        obj.type = "DELETE";
+        return util.createNotifAndAudit(obj, funcs); // Accepted = true
+      } catch(err) {
+        Promise.resolve("Finish without notification");
+      }
     })
     .then(function(response) {
       return Promise.resolve(response);
