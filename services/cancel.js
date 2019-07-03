@@ -73,25 +73,30 @@ removeModule.removeAllContract = function(obj, db, funcs) {
       return util.cancelContract(data.ctid, db, funcs);
     })
     .then(function(response) {
-      ctid = {
-        id: data._id,
-        extid: data.ctid
-      };
-      util.getOnlyProp(users, data.foreignIot.uid, ['id']);
-      util.getOnlyProp(items, data.foreignIot.items, ['id']);
-      util.getOnlyProp(users, data.iotOwner.uid, ['id']);
-      util.getOnlyProp(items, data.iotOwner.items, ['id']);
-      return db.userOp.update({
-        _id: {
-          $in: users
-        }
-      }, {
-        $pull: {
-          hasContracts: ctid
-        }
-      }, {
-        multi: true
-      });
+      try{
+        ctid = {
+          id: data._id,
+          extid: data.ctid
+        };
+        util.getOnlyProp(users, data.foreignIot.uid, ['id']);
+        util.getOnlyProp(items, data.foreignIot.items, ['id']);
+        util.getOnlyProp(users, data.iotOwner.uid, ['id']);
+        util.getOnlyProp(items, data.iotOwner.items, ['id']);
+        return db.userOp.update({
+          _id: {
+            $in: users
+          }
+        }, {
+          $pull: {
+            hasContracts: ctid
+          }
+        }, {
+          multi: true
+        });
+      } catch(err) {
+        // Case missing some fields for update
+        Promise.reject({continue: true, message: "Contract " + JSON.stringify(obj.queryId) + " old schema or incomplete"});
+      }
     })
     .then(function(response) {
       return db.itemOp.update({
@@ -193,32 +198,37 @@ function removeOneUser(req, res, imForeign) {
       }
     })
     .then(function(response) {
-      util.getOnlyProp(items_id, response, ['_id']);
-      util.getOnlyProp(items_oid, response, ['oid']);
-      if (imForeign) {
-        query = {
-          $pull: {
-            "foreignIot.items": {
-              id: {
-                $in: items_id
+      try{
+        util.getOnlyProp(items_id, response, ['_id']);
+        util.getOnlyProp(items_oid, response, ['oid']);
+        if (imForeign) {
+          query = {
+            $pull: {
+              "foreignIot.items": {
+                id: {
+                  $in: items_id
+                }
               }
             }
-          }
-        };
-      } else {
-        query = {
-          $pull: {
-            "iotOwner.items": {
-              id: {
-                $in: items_id
+          };
+        } else {
+          query = {
+            $pull: {
+              "iotOwner.items": {
+                id: {
+                  $in: items_id
+                }
               }
             }
-          }
-        };
+          };
+        }
+        return db.contractOp.update(obj.queryId, query, {
+          multi: true
+        });
+      } catch(err) {
+        // Case missing some fields for update
+        Promise.reject({continue: true, message: "Contract " + JSON.stringify(obj.queryId) + " old schema or incomplete"});
       }
-      return db.contractOp.update(obj.queryId, query, {
-        multi: true
-      });
     })
     .then(function(response) {
       return db.userOp.update({
