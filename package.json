@@ -1,6 +1,6 @@
 {
   "name": "sharq-contracts",
-  "version": "1.3.12",
+  "version": "1.4.0",
   "description": "Shar-q extension for creating contracts",
   "main": "index.js",
   "scripts": {
