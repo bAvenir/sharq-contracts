@@ -165,10 +165,7 @@ var create = module.exports = function(req, res, db, funcs) {
         51, null);
     })
     .then(function(response) {
-      funcs.logger.log(req, res, {
-        type: 'audit',
-        data: 'Contract posted, waiting for approval'
-      });
+      funcs.logger.audit('Contract posted, waiting for approval');
       return Promise.resolve('Contract posted, waiting for approval');
     })
     .catch(function(err) {

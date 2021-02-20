@@ -39,16 +39,10 @@ getModule.contractInfo = function(obj, req, res, db, funcs) {
   return db.contractOp.findOne(obj.query).lean()
     .then(function(data) {
       if (!data) {
-        funcs.logger.log(req, res, {
-          type: 'warn',
-          data: "The contract with: " + JSON.stringify(obj.query) + " could not be found"
-        });
+        funcs.logger.warn("The contract with: " + JSON.stringify(obj.query) + " could not be found");
         return Promise.resolve(false);
       } else if (!util.uidInContract(obj.uid, data)) {
-        funcs.logger.log(req, res, {
-          type: 'warn',
-          data: "You are not part of the contract with ctid: " + data.ctid
-        });
+        funcs.logger.warn("You are not part of the contract with ctid: " + data.ctid);
         res.status(401);
         return Promise.resolve("You are not part of the contract with ctid: " + data.ctid);
       } else {
@@ -130,10 +124,7 @@ getModule.fetchContract = function(id, req, res, db, funcs) {
       contracts = response;
       if (contracts.length === 0) {
         contracts = [];
-        return funcs.logger.log(req, res, {
-          type: 'warn',
-          data: 'No contracts for: ' + id
-        });
+        return funcs.logger.warn('No contracts for: ' + id);
       } else {
         return Promise.resolve(true);
       }

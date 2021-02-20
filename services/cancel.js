@@ -31,10 +31,7 @@ removeModule.cancel = function(obj, req, res, db, funcs) {
       }
     })
     .then(function(response) {
-      funcs.logger.log(req, res, {
-        type: 'audit',
-        data: 'Contract removed'
-      });
+      funcs.logger.audit('Contract removed');
       return Promise.resolve(response);
     })
     .catch(function(error) {

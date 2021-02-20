@@ -92,10 +92,7 @@ return db.userOp.findOneAndUpdate(obj.queryContract, {
     return util.createNotifAndAudit(obj, funcs); // Accepted = true
   })
   .then(function(response) {
-    funcs.logger.log(req, res, {
-      type: 'audit',
-      data: 'Contract accepted'
-    });
+    funcs.logger.audit('Contract accepted');
     Promise.resolve(updItem);
   })
   .catch(function(err){

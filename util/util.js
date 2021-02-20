@@ -92,26 +92,20 @@ function moveItemsInContract(req, res, obj, db, funcs) {
     );
   } else {
     if (obj.add) {
-      funcs.logger.log(req, res, {
-        type: 'warn',
-        data: {
-          user: obj.token_mail,
-          action: 'addItemToContract',
-          message: "No items to be added"
-        }
+      funcs.logger.warn({
+        user: obj.token_mail,
+        action: 'addItemToContract',
+        message: "No items to be added"
       });
       return Promise.resolve({
         "error": false,
         "message": "Nothing to be added..."
       });
     } else {
-      funcs.logger.log(req, res, {
-        type: 'warn',
-        data: {
-          user: obj.token_mail,
-          action: 'removeItemFromContract',
-          message: "No items to be removed"
-        }
+      funcs.logger.warn({
+        user: obj.token_mail,
+        action: 'removeItemFromContract',
+        message: "No items to be removed"
       });
       return Promise.resolve({
         "error": false,
@@ -158,14 +152,11 @@ function addingOne(oid, otherParams, req, res, db, funcs, callback) {
       return funcs.commServer.callCommServer({}, 'users/' + oid + '/groups/' + otherParams.ctid, 'POST');
     })
     .then(function(response) {
-      funcs.logger.log(req, res, {
-        type: "audit",
-        data: {
-          user: otherParams.mail,
-          action: 'addItemToContract',
-          item: oid,
-          contract: otherParams.ctid
-        }
+      funcs.logger.audit({
+        user: otherParams.mail,
+        action: 'addItemToContract',
+        item: oid,
+        contract: otherParams.ctid
       });
       callback(oid, "Success");
     })
@@ -173,14 +164,11 @@ function addingOne(oid, otherParams, req, res, db, funcs, callback) {
       if (err.statusCode !== 404) {
         callback(oid, 'Error: ' + err);
       } else {
-        funcs.logger.log(req, res, {
-          type: "audit",
-          data: {
-            user: otherParams.mail,
-            action: 'addItemToContract',
-            item: oid,
-            contract: otherParams.ctid
-          }
+        funcs.logger.audit({
+          user: otherParams.mail,
+          action: 'addItemToContract',
+          item: oid,
+          contract: otherParams.ctid
         });
         callback(oid, "Success");
       }
@@ -195,14 +183,11 @@ Extends to moveItemsInContract
 function deletingOne(oid, otherParams, req, res, funcs, callback) {
   return funcs.commServer.callCommServer({}, 'users/' + oid + '/groups/' + otherParams.ctid, 'DELETE')
     .then(function(response) {
-      funcs.logger.log(req, res, {
-        type: "audit",
-        data: {
-          user: otherParams.mail,
-          action: 'removeItemFromContract',
-          item: oid,
-          contract: otherParams.ctid
-        }
+      funcs.logger.audit({
+        user: otherParams.mail,
+        action: 'removeItemFromContract',
+        item: oid,
+        contract: otherParams.ctid
       });
       callback(oid, "Success");
     })
@@ -210,14 +195,11 @@ function deletingOne(oid, otherParams, req, res, funcs, callback) {
       if (err.statusCode !== 404) {
         callback(oid, err);
       } else {
-        funcs.logger.log(req, res, {
-          type: "audit",
-          data: {
+        funcs.logger.audit({
             user: otherParams.mail,
             action: 'removeItemFromContract',
             item: oid,
             contract: otherParams.ctid
-          }
         });
         callback(oid, "Success");
       }

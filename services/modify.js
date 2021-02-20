@@ -133,10 +133,7 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs, callback) {
               return Promise.resolve(true);
             })
             .then(function(response) {
-              funcs.logger.log(req, res, {
-                type: 'debug',
-                data: 'Disabling item in contract(s): ' + oid.extid
-              });
+              funcs.logger.debug('Disabling item in contract(s): ' + oid.extid);
               callback(false, {
                 toPause: allresult
               });
@@ -152,13 +149,10 @@ modifyModule.pauseContracts = function(ctData, req, res, db, funcs, callback) {
       }
     );
   } else {
-    funcs.logger.log(req, res, {
-      type: 'warn',
-      data: {
-        user: uid.extid,
-        action: 'removeItemFromContract',
-        message: "No items to be removed"
-      }
+    funcs.logger.warn({
+      user: uid.extid,
+      action: 'removeItemFromContract',
+      message: "No items to be removed"
     });
     callback(false, {
       toPause: "Nothing to be removed..."
@@ -221,10 +215,7 @@ modifyModule.enableOneItem = function(req, res, db, funcs) {
         56, "Item " + oid + " enabled");
     })
     .then(function(response) {
-      funcs.logger.log(req, res, {
-        type: 'debug',
-        data: 'Enabling item from contract(s): ' + oid
-      });
+      funcs.logger.debug('Enabling item from contract(s): ' + oid);
       return Promise.resolve('Success');
     })
     .catch(function(err) {
@@ -314,10 +305,7 @@ modifyModule.removeOneItem = function(req, res, db, funcs) {
         56, "Item " + oid + " removed");
     })
     .then(function(response) {
-      funcs.logger.log(req, res, {
-        type: 'debug',
-        data: 'Delete item from contract(s): ' + oid
-      });
+      funcs.logger.debug('Delete item from contract(s): ' + oid);
       return Promise.resolve('Success');
     })
     .catch(function(err) {
